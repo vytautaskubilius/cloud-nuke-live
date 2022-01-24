@@ -1,0 +1,100 @@
+name: cloud-nuke
+
+on:
+  schedule:
+    - cron: '45 3 * * SUN'
+  push:
+    branches:
+      - '**'
+      - '!main'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  CLOUD_NUKE_VERSION: "v0.8.1"
+
+jobs:
+  cloud-nuke-dry-run:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::661063309281:role/cloud-nuke20220120164716742100000001
+          aws-region: us-east-1
+
+      - name: Download cloud-nuke
+        run: |
+          wget https://github.com/gruntwork-io/cloud-nuke/releases/download/$CLOUD_NUKE_VERSION/cloud-nuke_linux_amd64
+          chmod u+x cloud-nuke_linux_amd64
+
+      - name: Dry-run cloud-nuke
+        run: |
+          ./cloud-nuke_linux_amd64 aws --config config/sandbox-661063309281.yaml --dry-run --force
+
+  # This job creates a strategy matrix for subsequent jobs from the contexts.json file that is hosted in the same
+  # directory as the workflows. This allows us to configure the build contexts in a centralized location, keeping
+  # the workflow code DRY.
+  build-matrix:
+    needs: cloud-nuke-dry-run
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v2
+
+    - name: Configure a re-usable strategy matrix
+      id: set-matrix
+      working-directory: .github/workflows
+      run: echo "::set-output name=matrix::$(jq -cr . contexts.json)"
+
+  cloud-nuke:
+    needs: build-matrix
+    strategy:
+      matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+    concurrency:
+      group: ${{ github.ref }}-${{ matrix.account_name }}-${{ matrix.account_id }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ matrix.account_id }}:role/${{ matrix.iam_role_name }}
+          aws-region: us-east-1
+
+      - name: Download cloud-nuke
+        run: |
+          wget https://github.com/gruntwork-io/cloud-nuke/releases/download/$CLOUD_NUKE_VERSION/cloud-nuke_linux_amd64
+          chmod u+x cloud-nuke_linux_amd64
+
+      - name: Execute cloud-nuke
+        run: |
+          ./cloud-nuke_linux_amd64 aws --config config/${{ matrix.account_name }}-${{ matrix.account_id }}.yaml --force
+
+  # This job tracks all the jobs in the cloud-nuke matrix to allow us to set up a single protection rule
+  # on the main branch instead of individually selecting each environment's cloud-nuke job in the list
+  cloud-nuke-success:
+    runs-on: ubuntu-latest
+    needs: cloud-nuke
+    if: ${{ always() }}
+
+    steps:
+      - name: Fail workflow if any cloud-nuke execution fails
+        if: ${{ needs.cloud-nuke.result == 'failure' }}
+        run: |
+          echo "One or more cloud-nuke executions were not successful - marking the worklow as failed."
+          exit 1

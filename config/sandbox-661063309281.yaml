@@ -1,0 +1,4 @@
+OIDCProvider:
+  exclude:
+    names_regex:
+      - token.actions.githubusercontent.com

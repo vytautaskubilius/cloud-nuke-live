@@ -1,0 +1,9 @@
+{
+  "include": [
+    {
+      "account_name": "sandbox",
+      "account_id": "661063309281",
+      "iam_role_name": "cloud-nuke20220120164716742100000001"
+    }
+  ]
+}
