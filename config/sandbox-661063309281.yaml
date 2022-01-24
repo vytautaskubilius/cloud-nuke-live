@@ -2,3 +2,11 @@ OIDCProvider:
   exclude:
     names_regex:
       - token.actions.githubusercontent.com
+s3:
+  exclude:
+    names_regex:
+      - ^.*-tf-state$
+DynamoDB:
+  exclude:
+    names_regex:
+      - ^.*-tf-state$
