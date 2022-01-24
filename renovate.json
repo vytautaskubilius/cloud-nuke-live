@@ -1,5 +1,13 @@
 {
   "extends": [
     "github>vytautaskubilius/renovate-config"
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^cloud-nuke.yaml$"],
+      "matchStrings": ["CLOUD_NUKE_VERSION: \"(?<currentValue>.*?)\"\n"],
+      "depNameTemplate": "gruntwork-io/cloud-nuke",
+      "datasourceTemplate": "github-releases"
+    }
   ]
 }
