@@ -43,6 +43,7 @@ jobs:
   build-matrix:
     needs: cloud-nuke-dry-run
     runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
 
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
