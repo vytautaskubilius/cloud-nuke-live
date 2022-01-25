@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  CLOUD_NUKE_VERSION: "v0.8.1"
+  CLOUD_NUKE_VERSION: "v0.9.1"
 
 jobs:
   cloud-nuke-dry-run:
