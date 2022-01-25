@@ -20,6 +20,7 @@ jobs:
     concurrency:
       group: ${{ github.ref }}
       cancel-in-progress: true
+    if: github.event_name == 'push'
 
     steps:
       - name: Check out the repo
@@ -44,7 +45,6 @@ jobs:
   # directory as the workflows. This allows us to configure the build contexts in a centralized location, keeping
   # the workflow code DRY.
   build-matrix:
-    needs: cloud-nuke-dry-run
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
 
