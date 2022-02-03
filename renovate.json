@@ -11,5 +11,13 @@
       "depNameTemplate": "gruntwork-io/cloud-nuke",
       "datasourceTemplate": "github-releases"
     }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true
+    }
   ]
 }
