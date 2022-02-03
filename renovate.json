@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "local>vytautaskubilius/renovate-config"
+    "local>vytautaskubilius/renovate-config",
+    "group:allNonMajor"
   ],
   "regexManagers": [
     {
