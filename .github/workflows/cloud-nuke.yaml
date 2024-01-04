@@ -21,7 +21,7 @@ jobs:
     concurrency:
       group: ${{ github.ref }}
       cancel-in-progress: true
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Check out the repo
