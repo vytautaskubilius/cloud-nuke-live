@@ -45,5 +45,3 @@ The workflow runs on a schedule which is defined in `.github/workflows/cloud-nuk
 ## Links
 
 - [`cloud-nuke` documentation](https://github.com/gruntwork-io/cloud-nuke).
-
-dummy1
